@@ -1,0 +1,51 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity cache / generated
+Assets/AssetStoreTools*
+
+# Crash reports
+sysinfo.txt
+
+# Addressables / generated player content
+Assets/AddressableAssetsData/*/*.bin*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional large deliverables (upload as GitHub Release assets instead)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.zip
+*.7z
+*.rar

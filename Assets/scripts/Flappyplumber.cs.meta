@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a4e021c1da208e94886ceb84358cebce
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - rb2D: {instanceID: 0}
+  - audioSource: {instanceID: 0}
+  - collisionPulseMaterial: {fileID: 2100000, guid: fbfc0ba9dadd48d4c9bdeec4412d3f1f, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
