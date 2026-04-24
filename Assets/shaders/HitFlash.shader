@@ -1,12 +1,13 @@
-Shader "Custom/SpritePulse"
+Shader "Custom/HitFlash"
 {
     Properties
     {
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Base Color", Color) = (1, 1, 1, 1)
-        _PulseColor ("Pulse Color", Color) = (1, 1, 1, 1)
-        _PulseSpeed ("Pulse Speed", Range(0.1, 10)) = 3
-        _PulseMin ("Min Brightness", Range(0.2, 1)) = 0.6
+        _HitColor ("Hit Color", Color) = (1, 0, 0, 1)
+        _HitTime ("Hit Time", Float) = -999
+        _FlashDuration ("Flash Duration", Float) = 0.5
+        _FlashSpeed ("Flash Speed", Float) = 10.0
     }
 
     SubShader
@@ -35,16 +36,16 @@ Shader "Custom/SpritePulse"
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
-                float2 uv : TEXCOORD0;
+                float3 normalOS   : NORMAL;
+                float2 uv         : TEXCOORD0;
             };
 
             struct Varyings
             {
                 float4 positionHCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-                float3 positionWS : TEXCOORD1;
-                float3 normalWS : TEXCOORD2;
+                float2 uv          : TEXCOORD0;
+                float3 positionWS  : TEXCOORD1;
+                float3 normalWS    : TEXCOORD2;
             };
 
             TEXTURE2D(_BaseMap);
@@ -52,29 +53,40 @@ Shader "Custom/SpritePulse"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
-                half4 _BaseColor;
-                half4 _PulseColor;
-                float _PulseSpeed;
-                float _PulseMin;
+                half4  _BaseColor;
+                half4  _HitColor;
+                float  _HitTime;
+                float  _FlashDuration;
+                float  _FlashSpeed;
             CBUFFER_END
 
             Varyings vert(Attributes input)
             {
                 Varyings output;
                 output.positionHCS = TransformObjectToHClip(input.positionOS.xyz);
-                output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
-                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
+                output.positionWS  = TransformObjectToWorld(input.positionOS.xyz);
+                output.normalWS    = TransformObjectToWorldNormal(input.normalOS);
+                output.uv          = TRANSFORM_TEX(input.uv, _BaseMap);
                 return output;
             }
 
             half4 frag(Varyings input) : SV_Target
             {
                 half4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);
-                float wave = (sin(_Time.y * _PulseSpeed) + 1.0) * 0.5;
-                float pulse = lerp(_PulseMin, 1.0, wave);
-                
-                half4 finalColor = texColor * _BaseColor * _PulseColor * pulse;
+
+                // Tiempo transcurrido desde el golpe
+                float elapsed = _Time.y - _HitTime;
+
+                // Solo parpadea dentro de la ventana de FlashDuration
+                float isHit = step(0.0, elapsed) * step(elapsed, _FlashDuration);
+
+                // Oscila entre 0 y 1 rapidamente
+                float flash = abs(sin(elapsed * _FlashSpeed)) * isHit;
+
+                // Mezcla color base con color de golpe
+                half4 finalColor = texColor * _BaseColor;
+                finalColor.rgb = lerp(finalColor.rgb, _HitColor.rgb, flash);
+
                 return finalColor;
             }
             ENDHLSL

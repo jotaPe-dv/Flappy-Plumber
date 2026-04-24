@@ -6,55 +6,54 @@ public class Flappyplumber : MonoBehaviour
 {
     public float velocity = 2;
     public Rigidbody2D rb2D;
-
     public float rotationSpeed = 25;
 
     public AudioSource audioSource;
-    public Material collisionPulseMaterial;
     public float gameOverDelay = 0.6f;
     public Color collisionPulseColor = new Color(1f, 0.2f, 0.2f, 1f);
     public float pulseSpeed = 18f;
 
-    private SpriteRenderer spriteRenderer;
+    private Renderer modelRenderer;
     private bool isDead;
-    private Color originalColor;
 
+    // Guardamos los colores originales de todos los materiales
+    private Color[] originalColors;
+    private Material[] instanceMaterials;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        }
+        modelRenderer = GetComponentInChildren<Renderer>();
 
-        if (spriteRenderer != null)
+        if (modelRenderer != null)
         {
-            originalColor = spriteRenderer.color;
+            // Obtenemos instancias propias de todos los materiales
+            instanceMaterials = modelRenderer.materials;
+            originalColors = new Color[instanceMaterials.Length];
+
+            for (int i = 0; i < instanceMaterials.Length; i++)
+            {
+                originalColors[i] = instanceMaterials[i].color;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Flappyplumber: No se encontro ningun Renderer en los hijos.");
         }
     }
 
-    // Update is called once per frame
     [System.Obsolete]
     void Update()
     {
-        if (isDead)
-        {
-            return;
-        }
+        if (isDead) return;
 
         bool clicked = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
         bool spacePressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
 
         if (clicked || spacePressed)
-        {
             rb2D.linearVelocity = Vector2.up * velocity;
-        }
-        
-        transform.rotation = Quaternion.Euler(0, 0, rb2D.velocity.y * rotationSpeed * Time.deltaTime * 100);
 
+        transform.rotation = Quaternion.Euler(0, 0, rb2D.velocity.y * rotationSpeed * Time.deltaTime * 100);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -64,27 +63,14 @@ public class Flappyplumber : MonoBehaviour
 
     private void HandleDeath()
     {
-        if (isDead)
-        {
-            return;
-        }
-
+        if (isDead) return;
         isDead = true;
 
-        if (collisionPulseMaterial != null && spriteRenderer != null)
-        {
-            spriteRenderer.material = collisionPulseMaterial;
-        }
-
-        if (spriteRenderer != null)
-        {
+        if (modelRenderer != null)
             StartCoroutine(PulseColorBeforeGameOver());
-        }
 
         if (audioSource != null)
-        {
             audioSource.Play();
-        }
 
         StartCoroutine(HandleGameOver());
     }
@@ -96,10 +82,21 @@ public class Flappyplumber : MonoBehaviour
         while (elapsed < gameOverDelay)
         {
             float wave = (Mathf.Sin(elapsed * pulseSpeed) + 1f) * 0.5f;
-            spriteRenderer.color = Color.Lerp(originalColor, collisionPulseColor, wave);
+
+            // Aplica el pulso a TODOS los materiales de Mario
+            for (int i = 0; i < instanceMaterials.Length; i++)
+            {
+                instanceMaterials[i].color = Color.Lerp(originalColors[i], collisionPulseColor, wave);
+            }
 
             elapsed += Time.deltaTime;
             yield return null;
+        }
+
+        // Restaura todos los colores originales
+        for (int i = 0; i < instanceMaterials.Length; i++)
+        {
+            instanceMaterials[i].color = originalColors[i];
         }
     }
 
@@ -109,8 +106,6 @@ public class Flappyplumber : MonoBehaviour
 
         GameManager gameManager = FindAnyObjectByType<GameManager>();
         if (gameManager != null)
-        {
             gameManager.GameOver();
-        }
     }
 }
