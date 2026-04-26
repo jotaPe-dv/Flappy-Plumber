@@ -22,6 +22,7 @@ public class Flappyplumber : MonoBehaviour
 
     void Start()
     {
+        //localsiño
         rb2D = GetComponent<Rigidbody2D>();
         modelRenderer = GetComponentInChildren<Renderer>();
 

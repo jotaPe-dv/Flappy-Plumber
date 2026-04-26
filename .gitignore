@@ -49,3 +49,6 @@ Thumbs.db
 *.zip
 *.7z
 *.rar
+
+# Local project notes (do not commit)
+DOCUMENTACION_TECNICA_TOTAL.md
